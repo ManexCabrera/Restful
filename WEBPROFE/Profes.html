@@ -1,0 +1,92 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8" />
+    <title>Profesores</title>
+    <script>
+
+        //Esta funcion se encarga de cargar los datos en el select
+        function CargarCombo() {
+            var xmlhttp, myObj;
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                console.log("cargarCombo() ejecutado");
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log("cargarCombo() estado OK");
+                    myObj = JSON.parse(this.responseText);
+                    console.log(myObj);
+                    console.log(this.responseText);
+                    for (var i = 0; i < myObj.length; i++) {
+                        var parentElement = document.getElementById("dpdato");
+                        parentElement.options[parentElement.options.length] = new Option(myObj[i].Nombre, myObj[i].ID);
+                        console.log("Añadido " + myObj[i].Nombre + " a la lista");
+                    }
+                }
+            };
+            
+            xmlhttp.open("GET", "https://localhost:44395/api/profesores", true);
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.send();
+        }
+
+        //Esta funcion se encarga de llenar la tabla con los datos recibidos del servidor
+        function elegirProfesor() {
+            console.log("ElegirProfesor() Ejecutado");
+            var xmlhttp, myObj, x, txt = "";
+            var x = parseInt(document.getElementById("dpdato").value);
+
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log("elegirProfesor() estado OK");
+                    myObj = JSON.parse(this.responseText);
+                    txt += "<div class='container'><table class='table' border='3'>"
+                    txt += "<tr><th scope='row'>ID</th> <td>" + myObj.ID + "</td></tr>";
+                    txt += "<tr><th scope='row'>Nombre</th> <td>" + myObj.Nombre + "</td></tr>";
+                    txt += "<tr><th scope='row'>Asignatura1</th> <td>" + myObj.Asignatura1 + "</td></tr>";
+                    txt += "<tr><th scope='row'>Asignatura2</th> <td>" + myObj.Asignatura2 + "</td></tr>";
+                    txt += "<tr><th scope='row'>Asignatura3</th> <td>" + myObj.Asignatura3 + "</td></tr>";
+                    txt += "</table></div>"
+                    document.getElementById("demo").innerHTML = txt;
+                }
+            };
+            
+            xmlhttp.open("GET", "https://localhost:44395/api/profesores/" + x, true);
+            xmlhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+            xmlhttp.send();
+        }
+
+        //Esta funcion se encarga de eliminar el profesor introducido
+        function borrarProfesor() {
+            console.log("borrarProfesor() Ejecutado");
+            var  xmlhttp, x;
+            var x = parseInt(document.getElementById("IDBorrar").value);
+            xmlhttp = new XMLHttpRequest();
+            xmlhttp.onreadystatechange = function () {
+                if (this.readyState == 4 && this.status == 200) {
+                    console.log("borrarProfesor() estado OK");
+                    document.getElementById("rdo").innerHTML = this.responseText;
+                    var optionElement = document.getElementById("dpdato");
+                    optionElement.remove(x);
+                }
+            }
+            xmlhttp.withCredentials = false;
+            xmlhttp.open("DELETE", "https://localhost:44395/api/profesores/" + x, true);
+            xmlhttp.setRequestHeader("content-type", "application/json");
+            xmlhttp.send();
+        }
+    </script>
+</head>
+<body onload="CargarCombo()">
+
+
+    <select id="dpdato" class="btn btn-secondary dropdown-toggle" onchange="elegirProfesor(this.value)">
+        <option value="0">Elige profesor</option>
+    </select>
+    <p id="demo"></p><br />
+    <p id="rdo"></p>
+    ID para borrar: <input type="text" id="IDBorrar">
+    <button onclick="borrarProfesor()">Borrar</button>
+</body>
+</html>
